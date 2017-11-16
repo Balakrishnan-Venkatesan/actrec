@@ -12,7 +12,7 @@ error_reporting(E_ALL);
 define('DATABASE', 'bv98');
 define('USERNAME', 'bv98');
 define('PASSWORD', 'dvJjpozdZ');
-define('CONNECTION', 'sql2.njit.edu');
+define('CONNECTION', 'sql.njit.edu');
 class dbConn{
     //variable to hold connection object.
     protected static $db;
@@ -20,7 +20,7 @@ class dbConn{
     private function __construct() {
         try {
             // assign PDO object to db variable
-            self::$db = new PDO( 'mysql:host=sql2.njit.edu' . CONNECTION .';dbname=bv98' . DATABASE, USERNAME, PASSWORD );
+            self::$db = new PDO( 'mysql:host=' . CONNECTION .';dbname=' . DATABASE, USERNAME, PASSWORD );
             self::$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
         }
         catch (PDOException $e) {
