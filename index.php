@@ -1,41 +1,28 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: VBK
- * Date: 15-11-2017
- * Time: 06:34 PM
- */
 
-//turn on debugging messages
 ini_set('display_errors', 'On');
 error_reporting(E_ALL);
+
 define('DATABASE', 'bv98');
 define('USERNAME', 'bv98');
 define('PASSWORD', 'dvJjpozdZ');
-define('CONNECTION', 'sql.njit.edu');
+define('CONNECTION', 'sql1.njit.edu');
 class dbConn{
-    //variable to hold connection object.
     protected static $db;
-    //private construct - class cannot be instatiated externally.
     private function __construct() {
         try {
-            // assign PDO object to db variable
             self::$db = new PDO( 'mysql:host=' . CONNECTION .';dbname=' . DATABASE, USERNAME, PASSWORD );
             self::$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+	    echo "Connected successfully to db";
         }
         catch (PDOException $e) {
-            //Output error - would normally log this to error file rather than output to user.
             echo "Connection Error: " . $e->getMessage();
         }
     }
-    // get connection function. Static method - accessible without instantiation
     public static function getConnection() {
-        //Guarantees single instance, if no connection object exists then create one.
         if (!self::$db) {
-            //new connection object.
             new dbConn();
         }
-        //return connection.
         return self::$db;
     }
 }
@@ -73,6 +60,26 @@ class accounts extends collection {
 class todos extends collection {
     protected static $modelName = 'todo';
 }
+
+class htmlTable {
+    static public function table($head,$rows) {
+        $htmlTable = NULL;
+        $htmlTable .= "<table border = 2>";
+        foreach ($head as $head1) {
+            $htmlTable .= "<th>$head1</th>";
+        }
+        foreach ($rows as $row) {
+            $htmlTable .= "<tr>";
+            foreach ($row as $column) {
+                $htmlTable .= "<td>$column</td>";
+            }
+            $htmlTable .= "</tr>";
+        }
+        $htmlTable .= "</table>";
+        return $htmlTable;
+    }
+}
+
 class model {
     protected $tableName;
     public function save()
@@ -89,7 +96,6 @@ class model {
         $array = get_object_vars($this);
         $columnString = implode(',', $array);
         $valueString = ":".implode(',:', $array);
-        // echo "INSERT INTO $tableName (" . $columnString . ") VALUES (" . $valueString . ")</br>";
         echo 'Record saved' . $this->id;
     }
     private function insert() {
@@ -102,10 +108,26 @@ class model {
         echo 'Record updated' . $this->id;
     }
     public function delete() {
+        $db = dbConn::getConnection();
+        $sql = 'DELETE FROM' . $tableName . 'WHERE id='. $id;
+        $statement = $db->prepare($sql);
+        $statement->execute();
         echo 'Deleted record' . $this->id;
     }
 }
 class account extends model {
+    public $id;
+    public $email;
+    public $fname;
+    public $lname;
+    public $phone;
+    public $birthday;
+    public $gender;
+    public $password;
+    public function __construct()
+    {
+        $this->tableName = 'accounts';
+    }
 }
 class todo extends model {
     public $id;
@@ -121,23 +143,13 @@ class todo extends model {
 
     }
 }
-// this would be the method to put in the index page for accounts
+
 $records = accounts::findAll();
-//print_r($records);
-// this would be the method to put in the index page for todos
 $records = todos::findAll();
-//print_r($records);
-//this code is used to get one record and is used for showing one record or updating one record
 $record = todos::findOne(1);
-//print_r($record);
-//this is used to save the record or update it (if you know how to make update work and insert)
-// $record->save();
-//$record = accounts::findOne(1);
-//This is how you would save a new todo item
 $record = new todo();
 $record->message = 'some task';
 $record->isdone = 0;
-//$record->save();
 print_r($record);
 $record = todos::create();
 print_r($record);
