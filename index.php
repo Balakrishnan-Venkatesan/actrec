@@ -51,7 +51,7 @@ class collection {
         $class = static::$modelName;
         $statement->setFetchMode(PDO::FETCH_CLASS, $class);
         $recordsSet =  $statement->fetchAll();
-        return $recordsSet;
+        return $recordsSet[0];
     }
 }
 class accounts extends collection {
@@ -80,12 +80,22 @@ class model {
 	echo 'Record saved' . $this->id;
     }
     private function insert() {
-        $sql = 'something';
+        $db= dbConn::getConnection();
+	$statement = $db->prepare($sql);
+	$statement->execute();
+	$tableName= $this->tableName();
+	$array = get_object_vars($this);
+        $columnString = implode(',', $array);
+	$valueString = ':'.implode(',:', $array);
+	$sql = 'INSERT INTO' . $tableName;
         return $sql;
     }
     private function update() {
-        $tableName='accounts';
+        $db = dbConn::getConnection();
+	$tableName= $this->tableName;
+	$array = get_object_vars($this);
 	$sql = 'UPDATE' . $tableName . 'WHERE id=' . $id;
+	$statement = $db->prepare($sql);
 	$statement->execute();
 	return $sql;
         echo 'Record updated' . $this->id;
@@ -131,11 +141,11 @@ class tableNew {
     static public function htmlTable($rows) {
         $db=dbConn::getConnection();
         //$tableName = $this->tableName;
-	$sql = 'SHOW COLUMNS FROM accounts';
-	    $statement = $db->prepare($sql);
-	    $statement->execute();
-	    $head= $statement->fetchAll(PDO::FETCH_COLUMN);
-	    //return $head;
+        $sql = 'SHOW COLUMNS FROM accounts';
+        $statement = $db->prepare($sql);
+        $statement->execute();
+        $head= $statement->fetchAll(PDO::FETCH_COLUMN);
+        //return $head;
         echo "<table border = 2>";
         foreach ($head as $head1) {
             echo "<th>$head1</th>";
