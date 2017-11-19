@@ -85,8 +85,8 @@ class model {
     }
     private function update() {
         $tableName='accounts';
-	$sql = 'update' . $tableName . 'set id=5 where id=3';
-        return $sql;
+	$sql = 'UPDATE' . $tableName . 'WHERE id=' . $id;
+	return $sql;
         echo 'Record updated' . $this->id;
     }
     public function delete() {
@@ -154,5 +154,5 @@ $record->isdone = 0;
 print_r($record);
 $record = todos::create();
 print_r($record);
-
+print($htmlTable);
 ?>
