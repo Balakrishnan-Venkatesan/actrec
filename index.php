@@ -39,8 +39,8 @@ class collection {
         $statement->execute();
         $class = static::$modelName;
         $statement->setFetchMode(PDO::FETCH_CLASS, $class);
-        $recordsSet =  $statement->fetchAll();
-        return $recordsSet;
+	$recordsSet =  $statement->fetchAll();
+	return $recordsSet;
     }
     static public function findOne($id) {
         $db = dbConn::getConnection();
@@ -55,29 +55,10 @@ class collection {
     }
 }
 class accounts extends collection {
-    protected static $modelName = 'account';
+    public static $modelName = 'account';
 }
 class todos extends collection {
-    protected static $modelName = 'todo';
-}
-
-class htmlTable {
-    static public function table($head,$rows) {
-        $htmlTable = NULL;
-        $htmlTable .= "<table border = 2>";
-        foreach ($head as $head1) {
-            $htmlTable .= "<th>$head1</th>";
-        }
-        foreach ($rows as $row) {
-            $htmlTable .= "<tr>";
-            foreach ($row as $column) {
-                $htmlTable .= "<td>$column</td>";
-            }
-            $htmlTable .= "</tr>";
-        }
-        $htmlTable .= "</table>";
-        return $htmlTable;
-    }
+    public static $modelName = 'todo';
 }
 
 class model {
@@ -96,14 +77,15 @@ class model {
         $array = get_object_vars($this);
         $columnString = implode(',', $array);
         $valueString = ":".implode(',:', $array);
-        echo 'Record saved' . $this->id;
+	echo 'Record saved' . $this->id;
     }
     private function insert() {
         $sql = 'something';
         return $sql;
     }
     private function update() {
-        $sql = 'something';
+        $tableName='accounts';
+	$sql = 'update' . $tableName . 'set id=5 where id=3';
         return $sql;
         echo 'Record updated' . $this->id;
     }
@@ -112,7 +94,7 @@ class model {
         $sql = 'DELETE FROM' . $tableName . 'WHERE id='. $id;
         $statement = $db->prepare($sql);
         $statement->execute();
-        echo 'Deleted record' . $this->id;
+	echo 'Deleted record' . $this->id;
     }
 }
 class account extends model {
@@ -124,7 +106,7 @@ class account extends model {
     public $birthday;
     public $gender;
     public $password;
-    public function __construct()
+    public static function table()
     {
         $this->tableName = 'accounts';
     }
@@ -137,10 +119,29 @@ class todo extends model {
     public $duedate;
     public $message;
     public $isdone;
-    public function __construct()
+    public static function table()
     {
         $this->tableName = 'todos';
 
+    }
+}
+
+class tableNew {
+    static public function htmlTable($head,$rows) {
+        $htmlTable = NULL;
+        $htmlTable .= "<table border = 2>";
+        foreach ($head as $head1) {
+            $htmlTable .= "<th>$head1</th>";
+        }
+        foreach ($rows as $row) {
+            $htmlTable .= "<tr>";
+            foreach ($row as $column) {
+                $htmlTable .= "<td>$column</td>";
+            }
+            $htmlTable .= "</tr>";
+        }
+        $htmlTable .= "</table>";
+        return $htmlTable;
     }
 }
 
