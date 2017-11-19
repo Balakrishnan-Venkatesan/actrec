@@ -39,8 +39,8 @@ class collection {
         $statement->execute();
         $class = static::$modelName;
         $statement->setFetchMode(PDO::FETCH_CLASS, $class);
-	$recordsSet =  $statement->fetchAll();
-	return $recordsSet;
+        $recordsSet =  $statement->fetchAll();
+        return $recordsSet;
     }
     static public function findOne($id) {
         $db = dbConn::getConnection();
@@ -51,7 +51,7 @@ class collection {
         $class = static::$modelName;
         $statement->setFetchMode(PDO::FETCH_CLASS, $class);
         $recordsSet =  $statement->fetchAll();
-        return $recordsSet[0];
+        return $recordsSet;
     }
 }
 class accounts extends collection {
@@ -86,6 +86,7 @@ class model {
     private function update() {
         $tableName='accounts';
 	$sql = 'UPDATE' . $tableName . 'WHERE id=' . $id;
+	$statement->execute();
 	return $sql;
         echo 'Record updated' . $this->id;
     }
@@ -106,7 +107,7 @@ class account extends model {
     public $birthday;
     public $gender;
     public $password;
-    public static function table()
+    public function __construct()
     {
         $this->tableName = 'accounts';
     }
@@ -119,7 +120,7 @@ class todo extends model {
     public $duedate;
     public $message;
     public $isdone;
-    public static function table()
+    public function __construct()
     {
         $this->tableName = 'todos';
 
@@ -127,25 +128,31 @@ class todo extends model {
 }
 
 class tableNew {
-    static public function htmlTable($head,$rows) {
-        $htmlTable = NULL;
-        $htmlTable .= "<table border = 2>";
+    static public function htmlTable($rows) {
+        $db=dbConn::getConnection();
+        //$tableName = $this->tableName;
+	$sql = 'SHOW COLUMNS FROM accounts';
+	    $statement = $db->prepare($sql);
+	    $statement->execute();
+	    $head= $statement->fetchAll(PDO::FETCH_COLUMN);
+	    //return $head;
+        echo "<table border = 2>";
         foreach ($head as $head1) {
-            $htmlTable .= "<th>$head1</th>";
+            echo "<th>$head1</th>";
         }
         foreach ($rows as $row) {
-            $htmlTable .= "<tr>";
+            echo "<tr>";
             foreach ($row as $column) {
-                $htmlTable .= "<td>$column</td>";
+                echo "<td>$column</td>";
             }
-            $htmlTable .= "</tr>";
+            echo "</tr>";
         }
-        $htmlTable .= "</table>";
-        return $htmlTable;
+        echo "</table>";
     }
 }
 
 $records = accounts::findAll();
+echo tableNew::htmlTable($records);
 $records = todos::findAll();
 $record = todos::findOne(1);
 $record = new todo();
@@ -154,5 +161,5 @@ $record->isdone = 0;
 print_r($record);
 $record = todos::create();
 print_r($record);
-print($htmlTable);
+
 ?>
