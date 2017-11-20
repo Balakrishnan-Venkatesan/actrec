@@ -210,12 +210,12 @@ todos::create();
 $records = todos::findAll();
 $td= new todo();
 $head= $td->header();
-echo '<h1>todo table find all </h1>';
+echo '<h1>todos table find all </h1>';
 echo htmlTable::tableNew($head,$records);
 echo '<hr>';
 
 $record = todos::findOne(4);
-echo '<h1>todo table find one </h1>';
+echo '<h1>todos table find one </h1>';
 echo htmlTable::tableNew($head,$record);
 echo '<hr>';
 
@@ -229,7 +229,15 @@ $td->owneremail='marcusford@njit.com';
 $td->message='new todo';
 $td->save();
 $a1= todos::findAll();
-echo '<h1>todo table insert </h1>';
+echo '<h1>todos table insert </h1>';
+echo htmlTable::tableNew($head,$a1);
+echo '<hr>';
+
+$td->owneremail='marcusford@njit.com';
+$td->message='update todo';
+$td->save();
+$a1= todos::findAll();
+echo '<h1>todos table update </h1>';
 echo htmlTable::tableNew($head,$a1);
 echo '<hr>';
 
