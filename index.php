@@ -51,7 +51,7 @@ class collection {
         $class = static::$modelName;
         $statement->setFetchMode(PDO::FETCH_CLASS, $class);
         $recordsSet = $statement->fetchAll();
-        return $recordsSet[0];
+        return $recordsSet;
     }
 }
 class accounts extends collection {
@@ -63,63 +63,52 @@ class todos extends collection {
 
 class model {
     protected $tableName;
-    public function save()
-    {
+    public function save() {
         if ($this->id == '') {
-            $sql = $this->insert();
+            $this->insert();
         } else {
-            $sql = $this->update();
+            $this->update($this->id);
         }
-        $db = dbConn::getConnection();
-        $statement = $db->prepare($sql);
-        $statement->execute();
-        $tableName = get_called_class();
-        $array = get_object_vars($this);
-        $columnString = implode(',', $array);
-        $valueString = ":".implode(',:', $array);
-	echo 'Record saved' . $this->id;
     }
-    private function insert() {
+    public function insert() {
         $db= dbConn::getConnection();
-	$statement = $db->prepare($sql);
-	$statement->execute();
-	$tableName= $this->tableName();
+	$this->id=33;
+	$tableName= $this->tableName;
 	$array = get_object_vars($this);
-	array_pop($array);
-        $head = array_keys($array);
-        $columnString = implode(',', $head);
-	$valueString = ':'.implode(',:', $head);
-	$sql = 'INSERT INTO' . $tableName. '('.$columnString.') VALUES ('.$valueString.')' ;
-        $statement->execute($array);
+        array_pop($array);
+	$head = array_keys($array);
+        $columnString = implode(',',$head);
+	$valueString = "'".implode("',' ",$array)."'";
+	$sql = 'INSERT INTO ' . $tableName. ' (' . $columnString . ') VALUES (' . $valueString . ')' ;
+        $statement = $db->prepare($sql);
+	$statement->execute();
     }
-    private function update() {
+    public function update($id) {
         $db = dbConn::getConnection();
 	$tableName= $this->tableName;
 	$array = get_object_vars($this);
-	array_pop($array);
-	$space= ' ';
-	$arr= '';
-	foreach($array as $key=>$value){
-	   $array1.=$temp.$key.'="'.$value.'"';
-	   $space=", ";
-        }
-	$sql = 'UPDATE' . $tableName . 'SET' . $arr .  'WHERE id=' . $id;
-	$statement = $db->prepare($sql);
-	$statement->execute();
-	return $sql;
-        echo 'Record updated' . $this->id;
-    }
-    public function delete() {
-        $db = dbConn::getConnection();
-        $sql = 'DELETE FROM' . $tableName . 'WHERE id='. $id;
+        array_pop($array);
+	$space=' ';
+	$arr1='';
+        foreach($array as $key=>$value){
+	         $arr1.=$space.$key.'="'.$value.'"';
+           $space=", ";
+	}
+        $sql= 'UPDATE '. $tableName .' SET'. $arr1 .' WHERE id='. $id;
         $statement = $db->prepare($sql);
         $statement->execute();
-	echo 'Deleted record' . $this->id;
+    }
+    public function delete($id){
+        $tableName= $this->tableName;
+	$sql = ' DELETE FROM ' . $tableName . ' WHERE id= '. $id;
+        $db = dbConn::getConnection();
+	$statement = $db->prepare($sql);
+        $statement->execute();
     }
     public function header() {
+        $db= dbConn::getConnection();
         $tableName = $this->tableName;
         $sql = 'SHOW COLUMNS FROM ' . $tableName;
-        $db = dbConn::getConnection();
         $statement = $db->prepare($sql);
         $statement->execute();
         $head = $statement->fetchAll(PDO::FETCH_COLUMN);
@@ -175,23 +164,73 @@ class htmlTable {
     }
 }
 
+accounts::create();
 $records = accounts::findAll();
+$record = accounts::findOne(1);
 $acc= new account();
 $head= $acc->header();
 echo '<h1>accounts table find all </h1>';
 echo htmlTable::tableNew($head,$records);
+echo '<hr>';
 
+echo '<h1>accounts table find one </h1>';
+echo htmlTable::tableNew($head,$record);
+echo '<hr>';  
+
+$acc->fname='tony';
+$acc->lname='martial';
+$acc->gender='male';
+$acc->insert();
+$a= accounts::findOne(33);
+echo '<h1>accounts table insert </h1>';
+echo htmlTable::tableNew($head,$a);
+echo '<hr>';
+
+$acc->phone= '848';
+$acc->id=33;
+$acc->fname='harry';
+$acc->lname='winks';
+$acc->email='winks@fmail.com';
+$acc->birthday='1111-11-11';
+$acc->gender='male';
+$acc->password='winks';
+$acc->update(33);
+$a= accounts::findOne(33);
+echo '<h1>accounts table update </h1>';
+echo htmlTable::tableNew($head,$a);
+echo '<hr>';
+
+$acc->delete(33);
+$a= accounts::findAll();
+echo '<h1>accounts table delete </h1>';
+echo htmlTable::tableNew($head,$a);
+echo '<hr>';
+
+todos::create();
 $records = todos::findAll();
+$td= new todo();
+$head= $td->header();
+echo '<h1>todo table find all </h1>';
 echo htmlTable::tableNew($head,$records);
+echo '<hr>';
 
 $record = todos::findOne(4);
+echo '<h1>todo table find one </h1>';
 echo htmlTable::tableNew($head,$record);
+echo '<hr>';
 
-$record = new todo();
-$record->message = 'some task';
-$record->isdone = 0;
-print_r($record);
-$record = todos::create();
-print_r($record);
+$td->delete(33);
+$a= todos::findAll();
+echo '<h1>todos table delete </h1>';
+echo htmlTable::tableNew($head,$a);
+echo '<hr>';
+
+$td->owneremail='marcusford@njit.com';
+$td->message='new todo';
+$td->save();
+$a1= todos::findAll();
+echo '<h1>todo table insert </h1>';
+echo htmlTable::tableNew($head,$a1);
+echo '<hr>';
 
 ?>
