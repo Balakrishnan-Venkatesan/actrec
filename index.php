@@ -39,7 +39,7 @@ class collection {
         $statement->execute();
         $class = static::$modelName;
         $statement->setFetchMode(PDO::FETCH_CLASS, $class);
-        $recordsSet =  $statement->fetchAll();
+        $recordsSet = $statement->fetchAll();
         return $recordsSet;
     }
     static public function findOne($id) {
@@ -50,7 +50,7 @@ class collection {
         $statement->execute();
         $class = static::$modelName;
         $statement->setFetchMode(PDO::FETCH_CLASS, $class);
-        $recordsSet =  $statement->fetchAll();
+        $recordsSet = $statement->fetchAll();
         return $recordsSet[0];
     }
 }
@@ -65,7 +65,7 @@ class model {
     protected $tableName;
     public function save()
     {
-        if ($this->id = '') {
+        if ($this->id == '') {
             $sql = $this->insert();
         } else {
             $sql = $this->update();
@@ -85,10 +85,12 @@ class model {
 	$statement->execute();
 	$tableName= $this->tableName();
 	$array = get_object_vars($this);
-        $columnString = implode(',', $array);
-	$valueString = ':'.implode(',:', $array);
+	array_pop($array);
+        $head = array_keys($array);
+        $columnString = implode(',', $head);
+	$valueString = ':'.implode(',:', $head);
 	$sql = 'INSERT INTO' . $tableName. '('.$columnString.') VALUES ('.$valueString.')' ;
-        return $sql;
+        $statement->execute($array);
     }
     private function update() {
         $db = dbConn::getConnection();
@@ -113,6 +115,15 @@ class model {
         $statement = $db->prepare($sql);
         $statement->execute();
 	echo 'Deleted record' . $this->id;
+    }
+    public function header() {
+        $tableName = $this->tableName;
+        $sql = 'SHOW COLUMNS FROM ' . $tableName;
+        $db = dbConn::getConnection();
+        $statement = $db->prepare($sql);
+        $statement->execute();
+        $head = $statement->fetchAll(PDO::FETCH_COLUMN);
+        return $head;
     }
 }
 class account extends model {
@@ -144,36 +155,38 @@ class todo extends model {
     }
 }
 
-class tableNew {
-    static public function htmlTable($rows) {
-        $db=dbConn::getConnection();
-        //$tableName = get_called_class();
-        $sql = 'show columns FROM accounts' ;
-        $statement = $db->prepare($sql);
-        $statement->execute();
-        $head= $statement->fetchAll(PDO::FETCH_COLUMN);
-        //return $head;
-        echo "<table border = 2>";
+class htmlTable {
+    static public function tableNew($head,$rows)
+    {
+        $htmlTable = NULL;
+        $htmlTable .= "<table border = 2>";
         foreach ($head as $head1) {
-            echo "<th>$head1</th>";
+            $htmlTable .= "<th>$head1</th>";
         }
         foreach ($rows as $row) {
-            echo "<tr>";
+            $htmlTable .= "<tr>";
             foreach ($row as $column) {
-                echo "<td>$column</td>";
+                $htmlTable .= "<td>$column</td>";
             }
-            echo "</tr>";
+            $htmlTable .= "</tr>";
         }
-        echo "</table>";
+        $htmlTable .= "</table>";
+        echo $htmlTable;
     }
 }
 
 $records = accounts::findAll();
+$acc= new account();
+$head= $acc->header();
+echo '<h1>accounts table find all </h1>';
+echo htmlTable::tableNew($head,$records);
 
-//print_r($records);
-echo tableNew::htmlTable($records);
 $records = todos::findAll();
-$record = todos::findOne(1);
+echo htmlTable::tableNew($head,$records);
+
+$record = todos::findOne(4);
+echo htmlTable::tableNew($head,$record);
+
 $record = new todo();
 $record->message = 'some task';
 $record->isdone = 0;
