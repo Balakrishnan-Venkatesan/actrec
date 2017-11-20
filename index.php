@@ -87,14 +87,21 @@ class model {
 	$array = get_object_vars($this);
         $columnString = implode(',', $array);
 	$valueString = ':'.implode(',:', $array);
-	$sql = 'INSERT INTO' . $tableName;
+	$sql = 'INSERT INTO' . $tableName. '('.$columnString.') VALUES ('.$valueString.')' ;
         return $sql;
     }
     private function update() {
         $db = dbConn::getConnection();
 	$tableName= $this->tableName;
 	$array = get_object_vars($this);
-	$sql = 'UPDATE' . $tableName . 'WHERE id=' . $id;
+	array_pop($array);
+	$space= ' ';
+	$arr= '';
+	foreach($array as $key=>$value){
+	   $array1.=$temp.$key.'="'.$value.'"';
+	   $space=", ";
+        }
+	$sql = 'UPDATE' . $tableName . 'SET' . $arr .  'WHERE id=' . $id;
 	$statement = $db->prepare($sql);
 	$statement->execute();
 	return $sql;
@@ -140,8 +147,8 @@ class todo extends model {
 class tableNew {
     static public function htmlTable($rows) {
         $db=dbConn::getConnection();
-        //$tableName = $this->tableName;
-        $sql = 'SHOW COLUMNS FROM accounts';
+        //$tableName = get_called_class();
+        $sql = 'show columns FROM accounts' ;
         $statement = $db->prepare($sql);
         $statement->execute();
         $head= $statement->fetchAll(PDO::FETCH_COLUMN);
@@ -162,6 +169,8 @@ class tableNew {
 }
 
 $records = accounts::findAll();
+
+//print_r($records);
 echo tableNew::htmlTable($records);
 $records = todos::findAll();
 $record = todos::findOne(1);
